@@ -3,7 +3,9 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Http\Resources\UserLoginResource;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
 use Tymon\JWTAuth\Facades\JWTAuth;
 
@@ -18,7 +20,7 @@ class AuthController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return response()->json(['errors' => $validator->errors()->all()], 422);
+            return message(true, null, $validator->errors());
         }
 
         $credentials = $request->only('email', 'password');
@@ -27,15 +29,16 @@ class AuthController extends Controller
             return response()->json(['error' => 'Invalid credentials'], 401);
         }
 
-        return response()->json([
+        $data = [
             'token' => $token,
-        ]);
+            'user' => new UserLoginResource (Auth::user())
+        ];
+        return message(false, $data, []);
     }
 
     public function logout()
     {
         auth()->logout();
-        return response()->json(['message' => 'Logged out successfully']);
+        return message(false, null, 'Logged out successfully');
     }
-
 }

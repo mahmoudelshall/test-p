@@ -15,9 +15,12 @@ class AddAdminUserSeeder extends Seeder
     public function run(): void
     {
         User::updateOrCreate(
-            ['email' => 'admin@admin.com'], // Change email if needed
+            ['email' => 'admin@admin.com'], 
             [
-                'name' => 'Admin',
+                'name' => [
+                    'en' => 'Admin',
+                    'ar' => 'الادمن',
+                ],
                 'password' => Hash::make('admin@admin.com'),
             ]
         );

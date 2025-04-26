@@ -7,13 +7,16 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Spatie\MediaLibrary\HasMedia;
+use Spatie\MediaLibrary\InteractsWithMedia;
 use Spatie\Permission\Traits\HasRoles;
+use Spatie\Translatable\HasTranslations;
 use Tymon\JWTAuth\Contracts\JWTSubject;
 
-class User extends Authenticatable implements JWTSubject
+class User extends Authenticatable implements JWTSubject, HasMedia
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
-    use HasFactory, Notifiable, HasRoles, SoftDeletes;
+    use HasFactory, Notifiable, HasRoles, SoftDeletes, InteractsWithMedia, HasTranslations;
 
     /**
      * The attributes that are mass assignable.
@@ -24,6 +27,8 @@ class User extends Authenticatable implements JWTSubject
         'name',
         'email',
         'password',
+        'language',
+        'gender',
     ];
 
     /**
@@ -44,11 +49,13 @@ class User extends Authenticatable implements JWTSubject
     protected function casts(): array
     {
         return [
-             //   'email_verified_at' => 'datetime',
+            //   'email_verified_at' => 'datetime',
             'password' => 'hashed',
         ];
     }
-    
+
+    public $translatable = ['name'];
+
     public function getJWTIdentifier()
     {
         return $this->getKey();

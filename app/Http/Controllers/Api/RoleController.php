@@ -3,64 +3,98 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use Exception;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Validator;
 use Spatie\Permission\Models\Role;
 
 class RoleController extends Controller
 {
     public function index()
     {
-        $roles = Role::get();
-
-        return response()->json(['data' => $roles]);
+        try {
+            $roles = Role::get();
+            return message(false, $roles, []);
+        } catch (Exception $e) {
+            Log::error("Index roles: Unable to retrieve roles due to error: {$e->getMessage()}");
+            return message(true, null, [__('Unable to retrieve roles')]);
+        }
     }
 
     public function show($id)
     {
-        $role = Role::with('permissions')->findOrFail($id);
-        // Hide the pivot field from each permission
-        $role->permissions->each(function ($permission) {
-            $permission->makeHidden('pivot');
-        });
+        try {
+            $role = Role::with('permissions')->findOrFail($id);
+            // Hide the pivot field from each permission
+            $role->permissions->each(function ($permission) {
+                $permission->makeHidden('pivot');
+            });
 
-        return response()->json(['data' => $role]);
+            return message(false, $role, []);
+        } catch (Exception $e) {
+            Log::error("Show Role: Unable to retrieve role due to error: {$e->getMessage()}");
+            return message(true, null, [__('role not found')]);
+        }
     }
+
     public function store(Request $request)
     {
-        $request->validate([
-            'name' => 'required|string|unique:roles,name',
-            'permissions' => 'array',
-            'permissions.*' => 'exists:permissions,name',
-        ]);
+        try {
+            // Validate parameters
+            $validator = Validator::make($request->all(), [
+                'name' => 'required|string|unique:roles,name',
+                'permissions' => 'array',
+                'permissions.*' => 'exists:permissions,name',
+            ]);
 
-        $role = Role::create(['name' => $request->name]);
+            if ($validator->fails()) {
+                return message(true, null, $validator->errors());
+            }
 
-        if ($request->has('permissions')) {
-            $role->syncPermissions($request->permissions);
+
+            $role = Role::create(['name' => $request->name]);
+
+            if ($request->has('permissions')) {
+                $role->syncPermissions($request->permissions);
+            }
+
+            return message(false, $role, 'Role created');
+        } catch (\Exception $e) {
+            Log::error("Create Role : system can not create role for this error {$e->getMessage()}");
+            return message(true, null, [__('System can not create role')]);
         }
-
-        return response()->json(['message' => 'Role created', 'data' => $role]);
     }
 
     public function update(Request $request, $id)
     {
-        $request->validate([
-            'name' => 'sometimes|string|unique:roles,name,' . $id,
-            'permissions' => 'array',
-            'permissions.*' => 'exists:permissions,id',
-        ]);
+        try {
+            // Validate parameters
+            $validator = Validator::make($request->all(), [
+                'name' => 'sometimes|string|unique:roles,name,' . $id,
+                'permissions' => 'array',
+                'permissions.*' => 'exists:permissions,name',
+            ]);
 
-        $role = Role::findOrFail($id);
+            if ($validator->fails()) {
+                return message(true, null, $validator->errors());
+            }
 
-        if ($request->has('name')) {
-            $role->name = $request->name;
-            $role->save();
+            $role = Role::findOrFail($id);
+
+            if ($request->has('name')) {
+                $role->name = $request->name;
+                $role->save();
+            }
+
+            if ($request->has('permissions')) {
+                $role->syncPermissions($request->permissions);
+            }
+
+            return message(false, $role, 'Role updated');
+        } catch (Exception $e) {
+            Log::error("Update Role: system cannot update role for this error: {$e->getMessage()}");
+            return message(true, null, [__('System cannot update role')]);
         }
-
-        if ($request->has('permissions')) {
-            $role->syncPermissions($request->permissions);
-        }
-
-        return response()->json(['message' => 'Role updated', 'data' => $role]);
     }
 }

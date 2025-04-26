@@ -3,24 +3,42 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use Exception;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Validator;
 use Spatie\Permission\Models\Permission;
 
 class PermissionController extends Controller
 {
     public function index()
     {
-        return response()->json(Permission::all());
+        try {
+            return message(false, Permission::all(), []);
+        } catch (Exception $e) {
+            Log::error("Index Permissions: Unable to retrieve permissions due to error: {$e->getMessage()}");
+            return message(true, null, [__('Unable to retrieve permissions')]);
+        }
     }
 
     public function store(Request $request)
     {
-        $request->validate([
-            'name' => 'required|string|unique:permissions,name',
-        ]);
+        try {
+            // Validate parameters
+            $validator = Validator::make($request->all(), [
+                'name' => 'required|string|unique:permissions,name',
+            ]);
 
-        $permission = Permission::create(['name' => $request->name]);
+            if ($validator->fails()) {
+                return  message(true, null, $validator->errors());
+            }
 
-        return response()->json(['message' => 'Permission created', 'data' => $permission]);
+            $permission = Permission::create(['name' => $request->name]);
+
+            return message(false, $permission, 'Permission created');
+        } catch (Exception $e) {
+            Log::error("Create Permission : system can not Create Permission for this error {$e->getMessage()}");
+            return message(true, null, [__('System can not Create Permission')]);
+        }
     }
 }
