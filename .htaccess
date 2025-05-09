@@ -1,6 +1,4 @@
-# <FilesMatch \.php>
-#     SetHandler "proxy:unix:/var/run/php/php7.4-fpm.sock|fcgi://localhost/"
-# </FilesMatch>
+
 
 <IfModule mod_rewrite.c>
     <IfModule mod_negotiation.c>
@@ -20,7 +18,3 @@
     RewriteRule ^ server.php
 </IfModule>
 
-php_value post_max_size 99M
-php_value upload_max_filesize 99M
-php_value max_execution_time 10000
-php_value memory_limit -1

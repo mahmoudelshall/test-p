@@ -16,8 +16,10 @@ class UserLoginResource extends JsonResource
     {
         return [
             'id' => $this->id,
-            'name' =>  $this->getTranslation('name', $this->language)?? $this->getTranslation('name', 'en'),
+            'name' =>  $this->name,
             'email' => $this->email,
+            'mobile' => $this->mobile?->mobile,
+            'country_code_id' => $this->mobile?->country_code_id,
             'avatar' => $this->getFirstMediaUrl('avatar') ?: null,
             'language' => $this->language,
             'gender' => $this->gender,

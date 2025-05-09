@@ -1,0 +1,26 @@
+sudo apt-get install supervisor;
+sudo nano /etc/supervisor/conf.d/laravel-worker.conf;
+=============================================================================================
+[program:laravel-worker]
+process_name=%(program_name)s_%(process_num)02d
+command=php /var/www/html/artisan queue:work --timeout=0 --queue=high,default
+autostart=true
+autorestart=true
+user=root
+numprocs=2
+redirect_stderr=true
+stdout_logfile=/home/worker.log
+autorestart=true
+=============================================================================================
+sudo nano /etc/supervisor/conf.d/laravel-reverb.conf;
+=============================================================================================
+sudo supervisorctl reread;
+sudo supervisorctl update;
+sudo supervisorctl start laravel-worker:*;
+
+sudo supervisorctl stop laravel-worker:*
+sudo supervisorctl restart laravel-worker:*
+sudo supervisorctl status laravel-worker:*
+
+sudo service supervisor restart
+=============================================================================================

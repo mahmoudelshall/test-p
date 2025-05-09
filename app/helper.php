@@ -1,5 +1,6 @@
 <?php
 
+use App\Helpers\MailHelper;
 use Illuminate\Http\JsonResponse;
 
 /**
@@ -21,5 +22,16 @@ if (!function_exists('message')) {
             ],
             'data' => $data,
         ], $code);
+    }
+}
+
+if (!function_exists('sendMail')) {
+    function sendMail($to = null, $view = null, $text = null, $subject = null, $data = [], $attach = null, $attach_name = null)
+    {
+        if ($to) {
+            $helper = new MailHelper(null, $to, $view, $text, $subject, $data, $attach, $attach_name);
+            $helper = $helper->sending(null, $to, $view, $text, $subject, $data, $attach, $attach_name);
+            return $helper;
+        }
     }
 }

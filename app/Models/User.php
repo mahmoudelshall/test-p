@@ -10,13 +10,12 @@ use Illuminate\Notifications\Notifiable;
 use Spatie\MediaLibrary\HasMedia;
 use Spatie\MediaLibrary\InteractsWithMedia;
 use Spatie\Permission\Traits\HasRoles;
-use Spatie\Translatable\HasTranslations;
 use Tymon\JWTAuth\Contracts\JWTSubject;
 
 class User extends Authenticatable implements JWTSubject, HasMedia
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
-    use HasFactory, Notifiable, HasRoles, SoftDeletes, InteractsWithMedia, HasTranslations;
+    use HasFactory, Notifiable, HasRoles, SoftDeletes, InteractsWithMedia;
 
     /**
      * The attributes that are mass assignable.
@@ -29,6 +28,7 @@ class User extends Authenticatable implements JWTSubject, HasMedia
         'password',
         'language',
         'gender',
+        'verified',
     ];
 
     /**
@@ -54,8 +54,6 @@ class User extends Authenticatable implements JWTSubject, HasMedia
         ];
     }
 
-    public $translatable = ['name'];
-
     public function getJWTIdentifier()
     {
         return $this->getKey();
@@ -65,4 +63,10 @@ class User extends Authenticatable implements JWTSubject, HasMedia
     {
         return [];
     }
+
+    public function mobile()
+    {
+        return $this->morphOne(Mobile::class, 'model');
+    }
+    
 }
